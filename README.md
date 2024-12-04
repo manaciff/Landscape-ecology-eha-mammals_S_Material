@@ -1,1 +1,2 @@
-# LULC_Composition_RJ_Mammals
+# Asses landscape composition in areas of occupancy of medium-large size mammals in Rio de Janeiro state. 
+This project focuses on the distribution of large-bodied mammals in Rio de Janeiro. The research aims to assess the landscape composition and configuration within the area of occupancy (AOO) of nine threatened mammal species in the region. We employed concepts from landscape ecology and analyzed geospatial data obtained from open and governmental sources regarding land-use cover and other variables, such as the number of fragments and demographic density.
