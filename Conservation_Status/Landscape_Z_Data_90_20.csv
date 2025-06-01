@@ -1,0 +1,57 @@
+"YEAR","CLASS_TYPE","CLASS_NAME","metric","value","z_value"
+2023," cls_3 ","Pasture","CA",2463943.047,2.00690946419135
+2023," cls_3 ","Pasture","PLAND",56.3243,2.00692891983692
+2023," cls_3 ","Pasture","NP",38631,0.861018375891156
+2023," cls_3 ","Pasture","AI",93.3921,0.713426074195905
+2023," cls_5 ","Water ","CA",105109.9918,-0.567294945544359
+2023," cls_5 ","Water ","PLAND",2.4028,-0.567292698220728
+2023," cls_5 ","Water ","NP",12518,-0.424708011530841
+2023," cls_5 ","Water ","AI",89.7188,0.461067194318193
+2023," cls_1 ","Forest","CA",1301747.764,0.738600875808023
+2023," cls_1 ","Forest","PLAND",29.7572,0.738611029030851
+2023," cls_1 ","Forest","NP",66256,2.22119114242632
+2023," cls_1 ","Forest","AI",90.9369,0.54475171547874
+2023," cls_4 ","Agriculture","CA",125191.2186,-0.54538021848578
+2023," cls_4 ","Agriculture","PLAND",2.8618,-0.545379959838293
+2023," cls_4 ","Agriculture","NP",10729,-0.512793046076774
+2023," cls_4 ","Agriculture","AI",87.3397,0.297620971271595
+2023," cls_6 ","Non vegetated area","CA",252810.8243,-0.406108407351262
+2023," cls_6 ","Non vegetated area","PLAND",5.7791,-0.406107559657298
+2023," cls_6 ","Non vegetated area","NP",13167,-0.392753183459119
+2023," cls_6 ","Non vegetated area","AI",91.7202,0.598565101428218
+2023," cls_70 ","Roads and Railroad","CA",28621.4647,-0.650767196079832
+2023," cls_70 ","Roads and Railroad","PLAND",0.6543,-0.650766386808282
+2023," cls_70 ","Roads and Railroad","NP",12,-1.04046622395758
+2023," cls_70 ","Roads and Railroad","AI",50.3618,-2.24279266884222
+2023," cls_2 ","Herbaceous and Shrubby Vegetation","CA",97141.7096,-0.575990765340525
+2023," cls_2 ","Herbaceous and Shrubby Vegetation","PLAND",2.2206,-0.575990957334627
+2023," cls_2 ","Herbaceous and Shrubby Vegetation","NP",13757,-0.363703339757553
+2023," cls_2 ","Herbaceous and Shrubby Vegetation","AI",80.4423,-0.176236360846264
+1990," cls_3 ","Pasture","CA",2648031.202,2.20780564009343
+1990," cls_3 ","Pasture","PLAND",60.5316,2.20778614030841
+1990," cls_3 ","Pasture","NP",34542,0.659688187932341
+1990," cls_3 ","Pasture","AI",93.9988,0.755106887748245
+1990," cls_5 ","Water ","CA",107339.3224,-0.564862067707317
+1990," cls_5 ","Water ","PLAND",2.4537,-0.564862723528646
+1990," cls_5 ","Water ","NP",12267,-0.437066504359812
+1990," cls_5 ","Water ","AI",89.083,0.41738718565398
+1990," cls_1 ","Forest","CA",1199170.894,0.6266583072109
+1990," cls_1 ","Forest","PLAND",27.412,0.626650780546132
+1990," cls_1 ","Forest","NP",57401,1.78519730178672
+1990," cls_1 ","Forest","AI",91.0003,0.54910735018983
+1990," cls_4 ","Agriculture","CA",122907.2751,-0.547872695609723
+1990," cls_4 ","Agriculture","PLAND",2.8096,-0.547871996752374
+1990," cls_4 ","Agriculture","NP",9984,-0.549474628377903
+1990," cls_4 ","Agriculture","AI",85.2383,0.153252977866475
+1990," cls_70 ","Roads and Railroad","CA",28621.4647,-0.650767196079832
+1990," cls_70 ","Roads and Railroad","PLAND",0.6543,-0.650766386808282
+1990," cls_70 ","Roads and Railroad","NP",12,-1.04046622395758
+1990," cls_70 ","Roads and Railroad","AI",50.3618,-2.24279266884222
+1990," cls_6 ","Non vegetated area","CA",175503.001,-0.490474759267191
+1990," cls_6 ","Non vegetated area","PLAND",4.0118,-0.490478763455287
+1990," cls_6 ","Non vegetated area","NP",11250,-0.487140556977595
+1990," cls_6 ","Non vegetated area","AI",90.4265,0.509686795028578
+1990," cls_2 ","Herbaceous and Shrubby Vegetation","CA",93050.0269,-0.580456035837884
+1990," cls_2 ","Herbaceous and Shrubby Vegetation","PLAND",2.127,-0.580459437318496
+1990," cls_2 ","Herbaceous and Shrubby Vegetation","NP",15487,-0.278523289581777
+1990," cls_2 ","Herbaceous and Shrubby Vegetation","AI",78.0855,-0.338150554649056

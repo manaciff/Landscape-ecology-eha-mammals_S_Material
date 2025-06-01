@@ -1,0 +1,411 @@
+
+# Packages 
+
+library(tidyverse)
+library(here)
+library(qqplotr)
+
+here() # to check directory
+
+# --- DISPERSAL DISTANCE --- #
+
+# Opening and Reading tables
+
+table_homerange <- here("homerange_csv.csv")
+
+data_homerange <- read.csv2(table_homerange, header = TRUE, sep = ",",
+                            dec = ".") # Reading the data frame
+names(data_homerange)
+str(data_homerange)
+
+# Select col of species and homerange
+data_selec <- data_homerange %>% select("Species", "Home_Range_km2")  
+
+# Calculating the home range mean by species 
+media_homerange <- data_selec %>%
+  group_by(Species) %>%
+  summarise(
+    media_km2 = mean(Home_Range_km2, na.rm = TRUE),
+    n = n()
+  )
+print(media_homerange)
+
+
+## --- FRAGSTATS ANALISYS --- ##
+
+# Opening and Reading tables
+
+table_Area_RJ <- here("Analise_Status_90_20_AreaTotal_RJ.csv") # Total Area of Rio de Janeiro state
+table_patch <- here("Analise_Status_90_20_Patch.csv") # Patch level analisys
+table_landscape <- here("Analise_Status_90_20_Landscape.csv") # Landscape level analisys
+
+data_T_areaRJ <- read.csv2(table_Area_RJ, header = TRUE, sep = ",",
+                           dec = ".") # Reading the data frame
+names(data_T_areaRJ)
+str(data_T_areaRJ)
+
+# PATCH ANALYSIS 
+data_patch <- read.csv2(table_patch, header = TRUE, sep = ",",
+                        dec = ".") # Reading the data frame
+names(data_patch)
+str(data_patch)
+
+data_patch_2 <- data_patch %>%
+  mutate(CLASS_TYPE = str_trim(CLASS_TYPE),
+         CLASS_NAME = case_when(
+           CLASS_TYPE == "cls_1"  ~ "Forest",
+           CLASS_TYPE == "cls_2"  ~ "Herbaceous and Shrubby Vegetation",
+           CLASS_TYPE == "cls_3"  ~ "Pasture",
+           CLASS_TYPE == "cls_4"  ~ "Agriculture",
+           CLASS_TYPE == "cls_5"  ~ "Water",
+           CLASS_TYPE == "cls_6"  ~ "Non vegetated area",
+           CLASS_TYPE == "cls_70" ~ "Roads and Railroad",
+           TRUE                   ~ NA_character_
+         ))
+#data_patch_clean_col <- data_patch_2 %>% select(-CLASS_TYPE)
+
+write.csv(data_patch_2, file = "Patch_Analisys_90_20.csv", row.names = TRUE)
+
+
+# Statistical summary without normalization 
+summary_patch <- data_patch_2 %>%
+  group_by(YEAR, CLASS_NAME) %>%
+  summarise(
+    min_AREA  = min(AREA, na.rm = TRUE),
+    max_AREA  = max(AREA, na.rm = TRUE),
+    mean_AREA = mean(AREA, na.rm = TRUE),
+    sd_AREA   = sd(AREA, na.rm = TRUE),
+    median_AREA = median(AREA, na.rm = TRUE),
+    
+    min_FRAC  = min(FRAC, na.rm = TRUE),
+    max_FRAC  = max(FRAC, na.rm = TRUE),
+    mean_FRAC = mean(FRAC, na.rm = TRUE),
+    sd_FRAC   = sd(FRAC, na.rm = TRUE),
+    median_FRAC = median(FRAC, na.rm = TRUE),
+    
+    min_PROX  = min(PROX, na.rm = TRUE),
+    max_PROX  = max(PROX, na.rm = TRUE),
+    mean_PROX = mean(PROX, na.rm = TRUE),
+    sd_PROX   = sd(PROX, na.rm = TRUE),
+    median_PROX = median(PROX, na.rm = TRUE),
+    
+    min_ENN   = min(ENN, na.rm = TRUE),
+    max_ENN   = max(ENN, na.rm = TRUE),
+    mean_ENN  = mean(ENN, na.rm = TRUE),
+    sd_ENN    = sd(ENN, na.rm = TRUE),
+    median_ENN = median(ENN, na.rm = TRUE),
+    .groups = "drop")
+
+print(summary_patch)
+write.csv(summary_patch, file = "Patch_summary.csv", row.names = TRUE)
+
+
+# Statistical normalization using [(x - mean) / sd]
+data_patch_z <- data_patch_2 %>%
+  group_by(YEAR, CLASS_NAME) %>%
+  mutate(across(c(AREA, FRAC, PROX, ENN),
+                ~ (. - mean(., na.rm = TRUE)) / sd(., na.rm = TRUE),
+                .names = "z_{.col}")) %>%
+  ungroup()
+
+#write.csv(data_patch_z, file = "Patch_Z_Analisys_90_20.csv", row.names = TRUE)
+
+# Tests of normality 
+
+ ## AREA    # R: no normal distribution
+  qqnorm(data_patch_z$z_AREA, main = "Q-Q plot para z_AREA")
+  qqline(data_patch_z$z_AREA, col = "red")
+
+  ggplot(data_patch_z, aes(sample = z_AREA)) +
+    stat_qq() +
+    stat_qq_line() +
+    facet_wrap(~ CLASS_NAME) +
+    labs(title = "Q-Q plot for z_AREA by class")
+  
+   shapiro.test(sample(data_patch_z$z_AREA, 5000)) #  W = 0.056487, p-value < 2.2e-16
+  
+  hist(data_patch_z$z_AREA,
+       main = "Histogram of z_AREA",
+       xlab = "z_AREA",
+       col = "skyblue",
+       breaks = 30,
+       xlim = c(-6, 8))  
+  
+  # ------ ## --------- #
+  
+  ## ENN    # R: no normal distribution
+  qqnorm(data_patch_z$z_ENN, main = "Q-Q plot para z_ENN")
+  qqline(data_patch_z$z_ENN, col = "red")
+  
+  ggplot(data_patch_z, aes(sample = z_ENN)) +
+    stat_qq() +
+    stat_qq_line() +
+    facet_wrap(~ CLASS_NAME) +
+    labs(title = "Q-Q plot for z_ENN by class")
+  
+ 
+  shapiro.test(sample(data_patch_z$z_ENN, 5000)) # W = 0.49736, p-value < 2.2e-16
+  
+  hist(data_patch_z$z_ENN,
+       main = "Histogram of z_ENN",
+       xlab = "z_ENN",
+       col = "skyblue",
+       breaks = 30,
+       xlim = c(-4, 4)) 
+  
+  # ------ ## --------- #
+  
+  ## PROX    # R: no normal distribution
+  qqnorm(data_patch_z$z_PROX, main = "Q-Q plot para z_PROX")
+  qqline(data_patch_z$z_PROX, col = "red")
+  
+  ggplot(data_patch_z, aes(sample = z_PROX)) +
+    stat_qq() +
+    stat_qq_line() +
+    facet_wrap(~ CLASS_NAME) +
+    labs(title = "Q-Q plot for z_PROX by class")
+  
+  shapiro.test(sample(data_patch_z$z_PROX, 5000)) # W = 0.35079, p-value < 2.2e-16
+  
+  hist(data_patch_z$z_PROX,
+       main = "Histogram of z_PROX",
+       xlab = "z_PROX",
+       col = "skyblue",
+       breaks = 30,
+       xlim = c(-4, 4))  
+  
+  # ------ ## --------- #
+  
+  ## FRAC    # R: no normal distribution
+  qqnorm(data_patch_z$z_FRAC, main = "Q-Q plot para z_FRAC")
+  qqline(data_patch_z$z_FRAC, col = "red")
+  
+  ggplot(data_patch_z, aes(sample = z_FRAC)) +
+    stat_qq() +
+    stat_qq_line() +
+    facet_wrap(~ CLASS_NAME) +
+    labs(title = "Q-Q plot for z_FRAC by class")
+  
+  shapiro.test(sample(data_patch_z$z_FRAC, 5000)) # W = 0.97709, p-value < 2.2e-16
+  
+  hist(data_patch_z$z_FRAC,
+       main = "Histogram of z_FRAC",
+       xlab = "z_FRAC",
+       col = "skyblue",
+       breaks = 30,
+       xlim = c(-4, 4))  
+  
+  # ------ ## --------- #
+  
+# Statistical summary with padronization
+  
+summary_patch_z <- data_patch_z %>%
+  group_by(YEAR, CLASS_NAME) %>%
+  summarise(
+    min_z_AREA  = min(z_AREA, na.rm = TRUE),
+    max_z_AREA  = max(z_AREA, na.rm = TRUE),
+    mean_z_AREA = mean(z_AREA, na.rm = TRUE),
+    sd_z_AREA   = sd(z_AREA, na.rm = TRUE),
+    median_z_AREA = median(z_AREA, na.rm = TRUE),
+    
+    min_z_FRAC  = min(z_FRAC, na.rm = TRUE),
+    max_z_FRAC  = max(z_FRAC, na.rm = TRUE),
+    mean_z_FRAC = mean(z_FRAC, na.rm = TRUE),
+    sd_z_FRAC   = sd(z_FRAC, na.rm = TRUE),
+    median_z_FRAC = median(z_FRAC, na.rm = TRUE),
+    
+    min_z_PROX  = min(z_PROX, na.rm = TRUE),
+    max_z_PROX  = max(z_PROX, na.rm = TRUE),
+    mean_z_PROX = mean(z_PROX, na.rm = TRUE),
+    sd_z_PROX   = sd(z_PROX, na.rm = TRUE),
+    median_z_PROX = median(z_PROX, na.rm = TRUE),
+    
+    min_z_ENN   = min(z_ENN, na.rm = TRUE),
+    max_z_ENN   = max(z_ENN, na.rm = TRUE),
+    mean_z_ENN  = mean(z_ENN, na.rm = TRUE),
+    sd_z_ENN    = sd(z_ENN, na.rm = TRUE),
+    median_z_ENN = median(z_ENN, na.rm = TRUE),
+    .groups = "drop"
+  )
+# write.csv(summary_patch_z, file = "Patch_Z_summary.csv", row.names = TRUE)
+
+# Plot a graphic of z data
+
+ ## Transforming data from wider to longer
+data_long_patch_z <- data_patch_z %>%
+  pivot_longer(cols = starts_with("z_"),
+               names_to = "metric",
+               values_to = "value") %>%
+  mutate(metric = str_remove(metric, "z_"))
+
+ ## Ploting with ggplot
+
+   ### Bar plot
+   ggplot(data_long_patch_z, aes(x = CLASS_NAME, y = value, fill = as.factor(YEAR))) +
+     geom_bar(stat = "identity", position = "dodge") +
+     facet_wrap(~ metric, scales = "free_y") +
+     scale_fill_manual(
+       values = c("1990" = "hotpink2", 
+                  "2023" = "orange2")
+     ) +
+     labs(x = "Classe de uso", y = "Valor padronizado (Z-score)", fill = "Ano") +
+     theme_minimal() +
+     theme(axis.text.x = element_text(angle = 45, hjust = 1))
+ 
+   ggsave("Plot_patch.png", 
+          plot = last_plot(),
+          scale = 1,
+          width = 16,
+          height = 8,
+          units = "cm",
+          dpi = 300)
+   
+   ## Plot by Z summary (median) 
+
+   ## Transforming data from wider to longer
+   data_long_patch_z_2 <- summary_patch_z %>%
+     pivot_longer(cols = starts_with("median_"),
+                  names_to = "metric",
+                  values_to = "value") %>%
+     mutate(metric = str_remove(metric, "median_z_"))  # remove prefixo
+   
+   ## Ploting 
+   
+   ggplot(data_long_patch_z_2, aes(x = CLASS_NAME, y = value, fill = as.factor(YEAR))) +
+     geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+     geom_text(aes(label = round(value, 2)),
+               position = position_dodge(0.8),
+               vjust = -0.5, size = 2.5, color = "black") +
+     facet_wrap(~ metric, scales = "free_y") +
+     scale_fill_manual(values = c("1990" = "grey35", "2023" = "lightblue3")) +
+     labs(x = "Classe de uso e cobertura do solo",
+          y = "Mediana das métricas padronizadas (Z-score)",
+          fill = "Ano") +
+     theme_minimal(base_size = 10) +
+     theme(axis.text.x = element_text(angle = 45, hjust = 1),
+           strip.text = element_text(face = "bold"))
+    
+# ------------ USING LOG AND Z-SCORE ---------- #
+  # Log and standardization  
+   data_patch_z_log <- data_patch_2 %>%
+     mutate(
+       log_AREA = log1p(AREA),
+       log_FRAC = log1p(FRAC),
+       log_PROX = log1p(PROX),
+       log_ENN  = log1p(ENN)
+     ) %>%
+     group_by(YEAR, CLASS_NAME) %>%
+     mutate(
+       z_log_AREA = scale(log_AREA),
+       z_log_FRAC = scale(log_FRAC),
+       z_log_PROX = scale(log_PROX),
+       z_log_ENN  = scale(log_ENN)
+     ) %>%
+     ungroup()
+   
+   write.csv(data_patch_z_log, "Patch_Z_Log_Analisys_90_20.csv", row.names = FALSE)
+   
+   shapiro.test(sample(data_patch_z_log$z_log_AREA, 5000)) # W = 0.76168, p-value < 2.2e-16
+   
+   # Summary of data post log and standardization by median
+   summary_patch_z_log <- data_patch_z_log %>%
+     group_by(YEAR, CLASS_NAME) %>%
+     summarise(
+       med_z_log_AREA = median(z_log_AREA, na.rm = TRUE),
+       iqr_z_log_AREA = IQR(z_log_AREA, na.rm = TRUE),
+       
+       med_z_log_FRAC = median(z_log_FRAC, na.rm = TRUE),
+       iqr_z_log_FRAC = IQR(z_log_FRAC, na.rm = TRUE),
+       
+       med_z_log_PROX = median(z_log_PROX, na.rm = TRUE),
+       iqr_z_log_PROX = IQR(z_log_PROX, na.rm = TRUE),
+       
+       med_z_log_ENN  = median(z_log_ENN, na.rm = TRUE),
+       iqr_z_log_ENN  = IQR(z_log_ENN, na.rm = TRUE),
+       .groups = "drop"
+     )
+   
+   write.csv(summary_patch_z_log, "Patch_Z_Log_Summary_90_20.csv", row.names = FALSE)
+   
+   # Plot showing median
+   data_long_patch_z_log <- data_patch_z_log %>%
+     select(YEAR, CLASS_NAME, z_log_AREA, z_log_FRAC, z_log_PROX, z_log_ENN) %>%
+     pivot_longer(cols = starts_with("z_log_"),
+                  names_to = "metric", names_prefix = "z_log_",
+                  values_to = "value")
+   
+   ggplot(data_long_patch_z_log, aes(x = CLASS_NAME, y = value, fill = as.factor(YEAR))) +
+     geom_violin(scale = "width", alpha = 0.6, position = position_dodge(0.9)) +
+     stat_summary(fun = median, geom = "point", color = "black",
+                  position = position_dodge(0.9), size = 1.5) +
+     facet_wrap(~ metric, scales = "free_y") +
+     labs(x = "LULC Class", y = "Z-score (log-transformation)", fill = "Year") +
+     theme_minimal(base_size = 10) +
+     theme(axis.text.x = element_text(angle = 45, hjust = 1))
+   
+   ggsave("Plot_Median_PatchMetrics_Zscore.png", 
+          plot = last_plot(),
+          scale = 1,
+          width = 16,
+          height = 12,
+          units = "cm",
+          dpi = 300)
+   
+# ------ STATISTICAL TESTS FOR PATCH METRICS ---- #
+  # OBS: After log and standardization, the data still showed no normal distribution,
+   # so we used the median of the z-score data
+  
+    wilcox.test(z_AREA ~ YEAR, data = data_patch_z %>% filter(CLASS_NAME == "Forest"))
+   
+# --------------------------------------------- #
+   
+# LANDSCAPE ANALYSIS 
+data_landscape <- read.csv2(table_landscape, header = TRUE, sep = ",",
+                            dec = ".") # Reading the data frame
+names(data_landscape)
+str(data_landscape)
+
+data_landscape_clean_col <- data_landscape %>% select(-AREA_CV)
+
+
+
+# Plot a graphic of landscape data
+
+ ## Transforming data from wider to longer
+  data_landscape_long <- data_landscape_clean_col %>%
+    pivot_longer(
+      cols = c(CA, PLAND, NP, AI),
+      names_to = "metric",
+      values_to = "value"
+      )
+  ## Statistical normalization using [(x - mean) / sd]
+  data_long_z <- data_landscape_long %>%
+    group_by(metric) %>%
+    mutate(z_value = (value - mean(value, na.rm = TRUE)) / sd(value, na.rm = TRUE)) %>%
+    ungroup()
+
+  write.csv(data_long_z, "Landscape_Z_Data_90_20.csv", row.names = FALSE)
+  
+  ## Ploting with ggplot
+  ggplot(data_long_z, aes(x = CLASS_NAME, y = z_value, fill = as.factor(YEAR))) +
+    geom_bar(stat = "identity", position = "dodge") +
+    facet_wrap(~ metric, scales = "free_y") +
+    scale_fill_manual(
+      values = c("1990" = "red3", 
+                 "2023" = "grey40")
+    ) +
+    labs(x = "Classe de uso", y = "Valor padronizado (Z-score)", fill = "Ano") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  ggsave("Plot_landscape.png", 
+         plot = last_plot(),
+         scale = 1,
+         width = 16,
+         height = 8,
+         units = "cm",
+         dpi = 300)
+  
+  # Save the script in txt.
+  file.copy(here::here("Fragstats_analisys.R"), here::here("Script_Mesorregiao_Mapa_Uso_Cobertura_do_Solo_V1.txt"))
+  
