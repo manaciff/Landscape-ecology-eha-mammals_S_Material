@@ -1,1 +1,1 @@
-
+This folder contains the data sheets and analysis scripts used to analyze landscape composition within the Area of Occupancy (AOO) of medium to large mammals threatened with extinction in Rio de Janeiro State.
